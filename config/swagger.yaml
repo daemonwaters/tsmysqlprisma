@@ -1,0 +1,244 @@
+openapi: 3.1.0
+info:
+  title: My Company API
+  description: API documentation for My Company
+  version: 1.0.0
+servers:
+  - url: http://localhost:3600/
+    description: Main server
+  - url: http://localhost:4000/
+    description: Backup server in case port 3600 is not available.
+paths:
+  /:
+    get:
+      operationId: checkServerHealth
+      summary: Checks the server health
+      description: This operation checks if the server is up and running correctly.
+      tags:
+        - Health
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: string
+                example:
+                  message: Server is healthy.
+  /api/users:
+    get:
+      operationId: getAll
+      summary: Gets a list of all users.
+      description: This operation retrieves an array of json objects containing all users from database.
+      tags:
+        - Users
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+                  example:
+                    user_id: 1
+                    username: alimohammadi
+                    password: as13f45
+                    email: ali@gmail.com
+                    age: 23
+        "500":
+          $ref: "#/components/errors/InternalServerError"
+    post:
+      operationId: create
+      summary: Creates a new user
+      description: This operation posts a new user to the database in JSON format.
+      tags:
+        - Users
+      requestBody:
+        description: New User data to be added to the database.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+              required:
+                - user_id
+                - username
+                - password
+                - email
+                - age
+              example:
+                user_id: 1
+                username: alimohammadi
+                password: as13f45
+                email: ali@gmail.com
+                age: 23
+
+      responses:
+        "201":
+          description: Created
+        "400":
+          $ref: "#/components/errors/BadRequest"
+        "409":
+          $ref: "#/components/errors/Conflict"
+        "500":
+          $ref: "#/components/errors/InternalServerError"
+  /api/users/{id}:
+    get:
+      operationId: Get one
+      summary: Returns a single user from databse.
+      description: This operation returns a JSON object containing the requested user data.
+      tags:
+        - Users
+      parameters:
+        - $ref: "#/components/schemas/Id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+                example:
+                  user_id: 1
+                  username: alimohammadi
+                  password: as13f45
+                  email: ali@gmail.com
+                  age: 23
+        "404":
+          $ref: "#/components/errors/NotFound"
+        "500":
+          $ref: "#/components/errors/InternalServerError"
+    put:
+      operationId: update
+      summary: Updates user data
+      description: This operation updates all fields of the user data except for `user_id`
+      tags:
+        - Users
+      parameters:
+        - $ref: "#/components/schemas/Id"
+      requestBody:
+        description: New user data to be updated
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+              required:
+                - username
+                - password
+                - email
+                - age
+              example:
+                username: James
+                password: james1234
+                email: james@gmail.com
+                age: 30
+      responses:
+        "201":
+          description: Created
+        "400":
+          $ref: "#/components/errors/BadRequest"
+        "404":
+          $ref: "#/components/errors/NotFound"
+        "500":
+          $ref: "#/components/errors/InternalServerError"
+    delete:
+      operationId: remove
+      summary: Deletes a user from databse
+      description: This operation deletes the user associated with the given `id`
+      tags:
+        - Users
+      parameters:
+        - $ref: "#/components/schemas/Id"
+      responses:
+        "204":
+          description: No Content
+        "404":
+          $ref: "#/components/errors/NotFound"
+        "500":
+          $ref: "#/components/errors/InternalServerError"
+
+      
+
+
+
+
+        
+
+
+
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        username:
+          type: string
+        password:
+          type: string
+        email:
+          type: string
+        age:
+          type: integer
+    Error:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        message:
+          type: string
+    Id:
+      name: id
+      in: path
+      schema: 
+        type: integer
+      required: true
+      description: The unique id of the user to get.
+      example: 1
+  errors:
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+            example:
+              statusCode: 500
+              message: Internal Server Error
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+            example:
+              statusCode: 400
+              message: All fields are required.
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+            example:
+              statusCode: 409
+              message: Credentials already taken.
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+            example: 
+              statusCode: 404
+              message: User not found.
+    
+
+
